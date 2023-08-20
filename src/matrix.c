@@ -10,18 +10,19 @@
 
 SDL_Surface* surface = NULL;
 SDL_Renderer* renderer = NULL;
-SDL_Texture* texture;
+SDL_Texture* texture = NULL;
+
 struct RGBLedMatrix *matrix;
 struct LedCanvas *offscreen_canvas;
 int width, height, aspectHeight;
 
 void catch_int(int sig_num) {
     led_matrix_delete(matrix);
+    exit(0);
 }
 
 int main(int argc, char **argv) {
   struct RGBLedMatrixOptions options;
-  int x, y, i;
 
   memset(&options, 0, sizeof(options));
   options.chain_length = 1;
