@@ -14,7 +14,13 @@ SDL_Texture* texture = NULL;
 
 struct RGBLedMatrix *matrix;
 struct LedCanvas *offscreen_canvas;
-int width, height, aspectHeight;
+
+/*
+dimensions for the drawing surface which may be
+less than the matrix dimensions to account for aspect ratio
+*/
+int surfaceWidth, surfaceHeight;
+int matrixWidth, matrixHeight;
 
 void catch_int(int sig_num) {
     led_matrix_delete(matrix);
@@ -31,9 +37,9 @@ int main(int argc, char **argv) {
     return 1;
 
   offscreen_canvas = led_matrix_create_offscreen_canvas(matrix);
-  led_canvas_get_size(offscreen_canvas, &width, &height);
+  led_canvas_get_size(offscreen_canvas, &matrixWidth, &matrixHeight);
   fprintf(stderr, "Size: %dx%d. Hardware gpio mapping: %s\n",
-          width, height, options.hardware_mapping);
+          matrixWidth, matrixHeight, options.hardware_mapping);
 
   doomgeneric_Create(argc, argv);
   signal(SIGINT, catch_int);
@@ -45,8 +51,15 @@ int main(int argc, char **argv) {
 }
 
 void DG_Init() {
-    aspectHeight = width * 0.625;
-    surface = SDL_CreateRGBSurface(0, width, aspectHeight, 32, 0, 0, 0, 0);
+    surfaceWidth = matrixWidth;
+    surfaceHeight = matrixWidth * 0.625;
+
+    if (surfaceHeight > matrixHeight) {
+        surfaceHeight = matrixHeight;
+        surfaceWidth = surfaceHeight / 0.625;
+    }
+
+    surface = SDL_CreateRGBSurface(0, surfaceWidth, surfaceHeight, 32, 0, 0, 0, 0);
     renderer = SDL_CreateSoftwareRenderer(surface);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, DOOMGENERIC_RESX, DOOMGENERIC_RESY);
 }
@@ -58,12 +71,11 @@ void DG_DrawFrame() {
     SDL_RenderPresent(renderer);
 
     uint32_t *pix = surface->pixels;
-    for (int y = 0; y < aspectHeight; ++y) {
-        for (int x = 0; x < width; ++x) {
-            uint32_t pixel = *pix;
-            uint8_t r = (pixel >> 16) & 0xFF;
-            uint8_t g = (pixel >> 8) & 0xFF;
-            uint8_t b = pixel & 0xFF;
+    for (int y = 0; y < surfaceHeight; ++y) {
+        for (int x = 0; x < surfaceWidth; ++x) {
+            uint8_t r = *pix >> 16;
+            uint8_t g = *pix >> 8;
+            uint8_t b = *pix;
             led_canvas_set_pixel(offscreen_canvas, x, y, r, g, b);
             pix++;
         }
