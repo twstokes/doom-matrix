@@ -37,8 +37,7 @@ int main(int argc, char **argv) {
 
   doomgeneric_Create(argc, argv);
   signal(SIGINT, catch_int);
-  for (int i = 0; ; i++)
-  {
+  while(true) {
       doomgeneric_Tick();
   }
 
