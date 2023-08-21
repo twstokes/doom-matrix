@@ -25,7 +25,6 @@ int main(int argc, char **argv) {
   struct RGBLedMatrixOptions options;
 
   memset(&options, 0, sizeof(options));
-  options.chain_length = 1;
 
   matrix = led_matrix_create_from_options(&options, &argc, &argv);
   if (matrix == NULL)
