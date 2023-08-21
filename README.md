@@ -9,18 +9,17 @@ _Note: Flickering isn't seen with human eyes. 👀_
 
 Runs Doom on LED matrices connected to a Raspberry Pi.
 
-Possible thanks to these libraries:
+**Made possible thanks to these libraries:**
 - [doomgeneric](https://github.com/ozkl/doomgeneric)
 - [rpi-rgb-led-matrix](https://github.com/hzeller/rpi-rgb-led-matrix)
-- [SDL2](https://github.com/libsdl-org/SDL)
-- [SDL_mixer 2](https://github.com/libsdl-org/SDL_mixer)
+- [SDL2](https://github.com/libsdl-org/SDL) / [SDL_mixer 2](https://github.com/libsdl-org/SDL_mixer)
 
 For best performance it's recommended to run an OS like [DietPi](https://dietpi.com/).
 
 ## Hardware
-- [64x64 LED matrix](https://www.adafruit.com/product/4732)
+- [64x64 LED Matrix](https://www.adafruit.com/product/4732)
 - [Adafruit RGB Matrix Bonnet](https://www.adafruit.com/product/3211)
-- [5V 10A PSU](https://www.adafruit.com/product/658)
+- [5V 10A Power Supply](https://www.adafruit.com/product/658)
 
 ## Setup tooling and libraries
 
