@@ -42,7 +42,7 @@ make install (as root)
 **Note:** 
 - It can take a while to compile these on a Pi! You can also consider cross-compiling from a faster machine.
 - If your distro has SDL packages you can install them instead.
-- Even if running `doom-matrix` `root`, you'll probably need to add your user to the appropriate `audio` group.
+- Even if running `doom-matrix` as `root`, you'll probably need to add your user to the appropriate `audio` group.
 
 ## Building the project
 
