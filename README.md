@@ -30,7 +30,16 @@ For best performance it's recommended to run an OS like [DietPi](https://dietpi.
 
 Audio should be decently turn-key, but can take a little more work. It's not recommended to use the on-board audio on the Pi while driving the matrix for performance reasons, so it's best to disable it on boot. I used an inexpensive USB adapter and made it the default for ALSA.
 
-Because I built the libraries locally I needed to install `libasound2-dev` beforehand and built [SDL](https://github.com/libsdl-org/SDL) and [SDL Mixer](https://github.com/libsdl-org/SDL_mixer) in the `libs/SDL` and `libs/SDL_mixer` paths respectively. [See build and installation instructions](https://wiki.libsdl.org/SDL2/Installation) for more info.
+Because I built the libraries locally I needed to install:
+- Sounds
+  - `libasound2-dev`
+- Music
+  - `fluid-soundfont-gm`
+  - `reepats`
+  - `timidity`
+  - `fluidsynth`
+
+And built [SDL](https://github.com/libsdl-org/SDL) and [SDL Mixer](https://github.com/libsdl-org/SDL_mixer) in the `libs/SDL` and `libs/SDL_mixer` paths respectively. [See build and installation instructions](https://wiki.libsdl.org/SDL2/Installation) for more info.
 
 In `libs/SDL` and `libs/SDL_mixer` you should only have to run:
 ```
