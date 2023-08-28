@@ -35,7 +35,7 @@ Because I built the libraries locally I needed to install:
   - `libasound2-dev`
 - Music
   - `fluid-soundfont-gm`
-  - `reepats`
+  - `freepats`
   - `timidity`
   - `fluidsynth`
 
