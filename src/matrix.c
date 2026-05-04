@@ -21,6 +21,7 @@ int surfaceWidth, surfaceHeight;
 int matrixWidth, matrixHeight;
 int *x_scale_map = NULL;
 int *y_scale_map = NULL;
+uint32_t last_frame_ms = 0;
 
 static void free_resources(void) {
     free(x_scale_map);
@@ -93,6 +94,15 @@ void DG_Init() {
 }
 
 void DG_DrawFrame() {
+    const uint32_t now_ms = DG_GetTicksMs();
+    const uint32_t frame_interval_ms = 1000 / 35;
+
+    if (last_frame_ms != 0 && now_ms - last_frame_ms < frame_interval_ms) {
+        return;
+    }
+
+    last_frame_ms = now_ms;
+
     for (int y = 0; y < surfaceHeight; ++y) {
         const uint32_t *src_row = (const uint32_t *)DG_ScreenBuffer + y_scale_map[y] * DOOMGENERIC_RESX;
         struct Color *dst_row = scaled_pixels + y * surfaceWidth;
