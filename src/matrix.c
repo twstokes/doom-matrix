@@ -1,19 +1,17 @@
 #include "doomgeneric.h"
 #include "led-matrix-c.h"
 
+#include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <signal.h>
 
-#include <SDL.h>
-
-SDL_Surface* surface = NULL;
-SDL_Renderer* renderer = NULL;
-SDL_Texture* texture = NULL;
-
 struct RGBLedMatrix *matrix;
 struct LedCanvas *offscreen_canvas;
+struct Color *scaled_pixels = NULL;
 
 /*
 dimensions for the drawing surface which may be
@@ -21,9 +19,25 @@ less than the matrix dimensions to account for aspect ratio
 */
 int surfaceWidth, surfaceHeight;
 int matrixWidth, matrixHeight;
+int *x_scale_map = NULL;
+int *y_scale_map = NULL;
+
+static void free_resources(void) {
+    free(x_scale_map);
+    free(y_scale_map);
+    free(scaled_pixels);
+    x_scale_map = NULL;
+    y_scale_map = NULL;
+    scaled_pixels = NULL;
+
+    if (matrix != NULL) {
+        led_matrix_delete(matrix);
+        matrix = NULL;
+    }
+}
 
 void catch_int(int sig_num) {
-    led_matrix_delete(matrix);
+    free_resources();
     exit(0);
 }
 
@@ -59,36 +73,54 @@ void DG_Init() {
         surfaceWidth = surfaceHeight / 0.625;
     }
 
-    surface = SDL_CreateRGBSurface(0, surfaceWidth, surfaceHeight, 32, 0, 0, 0, 0);
-    renderer = SDL_CreateSoftwareRenderer(surface);
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, DOOMGENERIC_RESX, DOOMGENERIC_RESY);
+    scaled_pixels = malloc((size_t)surfaceWidth * (size_t)surfaceHeight * sizeof(*scaled_pixels));
+    x_scale_map = malloc((size_t)surfaceWidth * sizeof(*x_scale_map));
+    y_scale_map = malloc((size_t)surfaceHeight * sizeof(*y_scale_map));
+
+    if (scaled_pixels == NULL || x_scale_map == NULL || y_scale_map == NULL) {
+        fprintf(stderr, "Failed to allocate render buffers\n");
+        free_resources();
+        exit(1);
+    }
+
+    for (int x = 0; x < surfaceWidth; ++x) {
+        x_scale_map[x] = (x * DOOMGENERIC_RESX) / surfaceWidth;
+    }
+
+    for (int y = 0; y < surfaceHeight; ++y) {
+        y_scale_map[y] = (y * DOOMGENERIC_RESY) / surfaceHeight;
+    }
 }
 
 void DG_DrawFrame() {
-    SDL_UpdateTexture(texture, NULL, DG_ScreenBuffer, DOOMGENERIC_RESX*sizeof(uint32_t));
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-    SDL_RenderPresent(renderer);
-
-    uint32_t *pix = surface->pixels;
     for (int y = 0; y < surfaceHeight; ++y) {
+        const uint32_t *src_row = (const uint32_t *)DG_ScreenBuffer + y_scale_map[y] * DOOMGENERIC_RESX;
+        struct Color *dst_row = scaled_pixels + y * surfaceWidth;
+
         for (int x = 0; x < surfaceWidth; ++x) {
-            uint8_t r = *pix >> 16;
-            uint8_t g = *pix >> 8;
-            uint8_t b = *pix;
-            led_canvas_set_pixel(offscreen_canvas, x, y, r, g, b);
-            pix++;
+            const uint32_t pixel = src_row[x_scale_map[x]];
+            dst_row[x].r = pixel >> 16;
+            dst_row[x].g = pixel >> 8;
+            dst_row[x].b = pixel;
         }
     }
+
+    if (surfaceWidth != matrixWidth || surfaceHeight != matrixHeight) {
+        led_canvas_clear(offscreen_canvas);
+    }
+
+    led_canvas_set_pixels(offscreen_canvas, 0, 0, surfaceWidth, surfaceHeight, scaled_pixels);
     offscreen_canvas = led_matrix_swap_on_vsync(matrix, offscreen_canvas);
 }
 
 void DG_SleepMs(uint32_t ms) {
-    SDL_Delay(ms);
+    usleep(ms * 1000);
 }
 
 uint32_t DG_GetTicksMs() {
-    return SDL_GetTicks(); 
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint32_t)(ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
 }
 
 int DG_GetKey(int* pressed, unsigned char* key) {
@@ -97,4 +129,3 @@ int DG_GetKey(int* pressed, unsigned char* key) {
 
 void DG_SetWindowTitle(const char* title) {
 }
-
