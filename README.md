@@ -25,37 +25,40 @@ For best performance it's recommended to run an OS like [DietPi](https://dietpi.
 
 1. Install C and C++ compilers + `make` for your OS
 1. Fetch the dependency submodules with `git submodule update --init --recursive --depth=1`
-
 ### Audio
 
-Audio should be decently turn-key, but can take a little more work. It's not recommended to use the on-board audio on the Pi while driving the matrix for performance reasons, so it's best to disable it on boot. I used an inexpensive USB adapter and made it the default for ALSA.
+Audio should be mostly turn-key, but may need some extra setup on a Pi. It's not recommended to use the on-board audio while driving the matrix for performance reasons, so it's best to disable it on boot. A simple USB audio adapter configured as the default ALSA device is a better fit.
 
-Because I built the libraries locally I needed to install:
-- Sounds
-  - `libasound2-dev`
-- Music
-  - `fluid-soundfont-gm`
-  - `freepats`
-  - `timidity`
-  - `fluidsynth`
-
-And built [SDL](https://github.com/libsdl-org/SDL) and [SDL Mixer](https://github.com/libsdl-org/SDL_mixer) in the `libs/SDL` and `libs/SDL_mixer` paths respectively. [See build and installation instructions](https://wiki.libsdl.org/SDL2/Installation) for more info.
-
-In `libs/SDL` and `libs/SDL_mixer` you should only have to run:
-```
-./configure
-make
-make install (as root)
-```
+For music playback on Debian-based systems, these packages can still be useful:
+- `libasound2-dev`
+- `fluid-soundfont-gm`
+- `freepats`
+- `timidity`
+- `fluidsynth`
 
 **Note:** 
-- It can take a while to compile these on a Pi! You can also consider cross-compiling from a faster machine.
-- If your distro has SDL packages you can install them instead.
 - Even if running `doom-matrix` as `root`, you'll probably need to add your user to the appropriate `audio` group.
+
+If you want audio support, install:
+
+`sudo apt install libsdl2-dev libsdl2-mixer-dev pkg-config`
 
 ## Building the project
 
 `make`
+
+This project is intended to be built on Linux, typically on a Raspberry Pi. The
+`Makefile` will stop immediately on macOS because `rpi-rgb-led-matrix` depends
+on Linux/Raspberry Pi userspace APIs.
+
+Audio support is enabled by default. To build without audio, use:
+
+```sh
+make AUDIO=0
+```
+
+Audio-enabled builds use `SDL2_mixer` from the system. If audio is disabled,
+the build skips `SDL_mixer` entirely.
 
 ### Cleaning
 
@@ -63,8 +66,12 @@ make install (as root)
 
 ## Running
 
+You need an IWAD file such as `doom1.wad` in your working directory, or you
+can point Doom to it explicitly with `-iwad`.
+
 The binary accepts arguments for both [rpi-rgb-led-matrix](https://github.com/hzeller/rpi-rgb-led-matrix/tree/master) and [doomgeneric](https://github.com/ozkl/doomgeneric), e.g.:
 
 `./doom_matrix --led-gpio-mapping=adafruit-hat -iwad doom1.wad --led-rows=64 --led-cols=64`
 
-See those libraries for information on what arguments are available.
+Use the GPIO mapping and matrix geometry that match your hardware. See those
+libraries for information on what arguments are available.
