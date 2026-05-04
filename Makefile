@@ -2,7 +2,6 @@ TARGET_EXEC := doom_matrix
 
 BUILD_DIR := build
 SRC_DIRS := src
-SDL2_CONFIG ?= sdl2-config
 AUDIO ?= 1
 UNAME_S := $(shell uname -s)
 
@@ -24,19 +23,22 @@ RGB_LIBRARY_NAME=rgbmatrix
 RGB_LIBRARY=$(RGB_LIBDIR)/lib$(RGB_LIBRARY_NAME).a
 RGB_LIBRARY_INCLUDE=$(RGB_LIB_DISTRIBUTION)/include
 
+ifeq ($(AUDIO),1)
+SDL2_CONFIG ?= sdl2-config
 SDL_CFLAGS ?= $(shell $(SDL2_CONFIG) --cflags)
 SDL_LDLIBS ?= $(shell $(SDL2_CONFIG) --libs)
 SDL_MIXER_CFLAGS ?= $(shell pkg-config --cflags SDL2_mixer 2>/dev/null)
 SDL_MIXER_LDLIBS ?= $(shell pkg-config --libs SDL2_mixer 2>/dev/null)
+endif
 
 OPTFLAGS ?= -O3 -DNDEBUG
 LTOFLAGS ?= -flto
 ARCHFLAGS ?= -march=native -mtune=native
 
 LDFLAGS += -L$(RGB_LIBDIR) $(LTOFLAGS)
-LDLIBS += -l$(RGB_LIBRARY_NAME) -lrt -lm -lc -lpthread $(SDL_LDLIBS)
+LDLIBS += -l$(RGB_LIBRARY_NAME) -lrt -lm -lc -lpthread
 ifeq ($(AUDIO),1)
-LDLIBS += $(SDL_MIXER_LDLIBS)
+LDLIBS += $(SDL_LDLIBS) $(SDL_MIXER_LDLIBS)
 endif
 
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c')
@@ -44,8 +46,9 @@ OBJS += $(patsubst %.c,$(BUILD_DIR)/%.o,$(filter %.c,$(SRCS)))
 OBJS += $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(filter %.cpp,$(SRCS)))
 
 INC_DIRS := $(shell find $(SRC_DIRS) -type d) $(DOOMGENERIC_DIR) $(RGB_LIBRARY_INCLUDE)
-INC_FLAGS := $(addprefix -I,$(INC_DIRS)) $(SDL_CFLAGS)
+INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 ifeq ($(AUDIO),1)
+INC_FLAGS += $(SDL_CFLAGS)
 INC_FLAGS += $(SDL_MIXER_CFLAGS)
 CFLAGS += -DFEATURE_SOUND
 endif

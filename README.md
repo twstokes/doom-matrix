@@ -24,8 +24,6 @@ For best performance it's recommended to run an OS like [DietPi](https://dietpi.
 ## Setup tooling and libraries
 
 1. Install C and C++ compilers + `make` for your OS
-1. Install SDL dependencies on Debian:
-   `sudo apt install libsdl2-mixer-dev`
 1. Fetch the dependency submodules with `git submodule update --init --recursive --depth=1`
 ### Audio
 
@@ -40,6 +38,10 @@ For music playback on Debian-based systems, these packages can still be useful:
 
 **Note:** 
 - Even if running `doom-matrix` as `root`, you'll probably need to add your user to the appropriate `audio` group.
+
+If you want audio support, install:
+
+`sudo apt install libsdl2-dev libsdl2-mixer-dev pkg-config`
 
 ## Building the project
 
@@ -64,8 +66,12 @@ the build skips `SDL_mixer` entirely.
 
 ## Running
 
+You need an IWAD file such as `doom1.wad` in your working directory, or you
+can point Doom to it explicitly with `-iwad`.
+
 The binary accepts arguments for both [rpi-rgb-led-matrix](https://github.com/hzeller/rpi-rgb-led-matrix/tree/master) and [doomgeneric](https://github.com/ozkl/doomgeneric), e.g.:
 
 `./doom_matrix --led-gpio-mapping=adafruit-hat -iwad doom1.wad --led-rows=64 --led-cols=64`
 
-See those libraries for information on what arguments are available.
+Use the GPIO mapping and matrix geometry that match your hardware. See those
+libraries for information on what arguments are available.
